@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Open Auth Kit</title>
+  <desc id="desc">A rebrandable authorization UI with demo mode and provider adapters.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#121412" />
+      <stop offset="55%" stop-color="#354035">
+        <animate attributeName="stop-color" values="#354035;#4d5b4c;#354035" dur="8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#111111" />
+    </linearGradient>
+    <radialGradient id="orb" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e8eee5" stop-opacity=".95" />
+      <stop offset="100%" stop-color="#a7b9a4" stop-opacity=".05" />
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="28" /></filter>
+  </defs>
+  <rect width="1200" height="360" rx="28" fill="url(#bg)" />
+  <circle cx="920" cy="120" r="170" fill="url(#orb)" opacity=".28" filter="url(#blur)">
+    <animate attributeName="cx" values="920;850;920" dur="9s" repeatCount="indefinite" />
+    <animate attributeName="cy" values="120;175;120" dur="7s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="920" cy="150" r="110" fill="none" stroke="#b6c8b1" stroke-opacity=".28" stroke-width="1">
+    <animate attributeName="r" values="110;135;110" dur="7s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="920" cy="150" r="76" fill="none" stroke="#dce8d9" stroke-opacity=".42" stroke-width="1" stroke-dasharray="4 12">
+    <animateTransform attributeName="transform" type="rotate" from="0 920 150" to="360 920 150" dur="18s" repeatCount="indefinite" />
+  </circle>
+  <g fill="#f7f7f4" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="72" y="110" font-size="18" letter-spacing="5" fill="#bdcdb9">OPEN-SOURCE AUTH UI</text>
+    <text x="68" y="182" font-size="58" font-weight="700" letter-spacing="-2">Open Auth Kit</text>
+    <text x="72" y="224" font-size="20" fill="#dbe4d8">Rebrand it. Connect your provider. Ship with confidence.</text>
+    <text x="72" y="284" font-size="14" fill="#b8c7b5">Safe demo mode  •  redirect-ready  •  database adapters</text>
+  </g>
+</svg>
