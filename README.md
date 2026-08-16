@@ -4,8 +4,9 @@
 
 A polished, open-source, rebrandable **React and TypeScript authorization UI** for teams that want a **safe local demo**, a **provider-agnostic OAuth/OIDC redirect boundary**, and a clean path to production integrations.
 
-**Live demo:** [demoauth.invokeil.cfd](https://demoauth.invokeil.cfd/) · **Source:** [Invokeil/OPEN-AUTHKIT-STUDIO](https://github.com/Invokeil/OPEN-AUTHKIT-STUDIO)
+**Live demo:** [demoauth.invokeil.cfd](https://demoauth.invokeil.cfd/) · **Source:** [Invokeil/OPEN-AUTHKIT-STUDIO](https://github.com/Invokeil/OPEN-AUTHKIT-STUDIO) · **Stable Release v1.0.0:** [Download Assets](https://github.com/Invokeil/OPEN-AUTHKIT-STUDIO/releases/tag/v1.0.0)
 
+[![Release](https://img.shields.io/github/v/release/Invokeil/open-authkit-studio?style=flat-square&color=success)](https://github.com/Invokeil/OPEN-AUTHKIT-STUDIO/releases/tag/v1.0.0)
 [![License](https://img.shields.io/github/license/Invokeil/open-authkit-studio?style=flat-square)](LICENSE)
 [![Security policy](https://img.shields.io/badge/security-policy-1f6f4a?style=flat-square)](SECURITY.md)
 [![Runtime](https://img.shields.io/badge/node-%3E%3D20-3c873a?style=flat-square)](package.json)
