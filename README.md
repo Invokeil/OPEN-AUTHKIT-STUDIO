@@ -2,7 +2,9 @@
 
 ![Open Auth Kit animated hero](docs/hero.svg)
 
-A polished, rebrandable authorization UI for teams that want a **safe local demo**, a **provider-agnostic redirect flow**, and a clean path to production integrations.
+A polished, open-source, rebrandable **React and TypeScript authorization UI** for teams that want a **safe local demo**, a **provider-agnostic OAuth/OIDC redirect boundary**, and a clean path to production integrations.
+
+**Live demo:** [demoauth.invokeil.cfd](https://demoauth.invokeil.cfd/) · **Source:** [Invokeil/OPEN-AUTHKIT-STUDIO](https://github.com/Invokeil/OPEN-AUTHKIT-STUDIO)
 
 [![License](https://img.shields.io/github/license/Invokeil/open-authkit-studio?style=flat-square)](LICENSE)
 [![Security policy](https://img.shields.io/badge/security-policy-1f6f4a?style=flat-square)](SECURITY.md)
@@ -20,7 +22,7 @@ A polished, rebrandable authorization UI for teams that want a **safe local demo
 | Redirect-ready mode | Redirect users to your own server-side login/signup or provider endpoint without collecting passwords in this UI.                             |
 | Database boundary   | A small `UserStore` contract plus a memory adapter and implementation notes for Supabase, Firebase, PostgreSQL, SQLite, Cloudflare D1 and KV. |
 | Security baseline   | Helmet headers, CSP, bounded request parsing, safe API 404s, strict static serving, secret scan and a reduced dependency graph.               |
-| Maintainer-friendly | MIT license, Bengali setup documentation, focused tests, reproducible lockfile and no committed dependencies.                                 |
+| Maintainer-friendly | MIT license, English setup documentation, focused tests, reproducible lockfile and no committed dependencies.                                      |
 
 ## Contents
 
@@ -35,6 +37,7 @@ A polished, rebrandable authorization UI for teams that want a **safe local demo
 - [Security and upload hygiene](#security-and-upload-hygiene)
 - [Testing and production build](#testing-and-production-build)
 - [Troubleshooting](#troubleshooting)
+- [Frequently asked questions](#frequently-asked-questions)
 - [Suggested next improvements](#suggested-next-improvements)
 - [License](#license)
 
@@ -140,7 +143,7 @@ Copy your logo to `client/public/your-logo.svg`. A safe logo should be a static,
 </svg>
 ```
 
-Use a valid `viewBox`, static paths, no scripts, no event handlers, no `<foreignObject>`, no remote images, no remote fonts and no JavaScript URLs. Prefer a high-contrast wordmark that remains legible at both desktop and mobile sizes. See the full SVG requirements in the Bengali documentation in the repository.
+Use a valid `viewBox`, static paths, no scripts, no event handlers, no `<foreignObject>`, no remote images, no remote fonts and no JavaScript URLs. Prefer a high-contrast wordmark that remains legible at both desktop and mobile sizes. See the full SVG requirements in the English documentation in the repository.
 
 ## Choose an auth mode
 
@@ -303,6 +306,28 @@ Set `VITE_AUTH_LOGIN_URL` for sign-in and `VITE_AUTH_SIGNUP_URL` for sign-up. Fo
 The repository includes the contract and docs, but it does not silently pretend that a provider is connected. Implement the provider adapter in `server/storage/`, register it in the factory, add tests, then set `DATABASE_PROVIDER`.
 
 </details>
+
+## Frequently asked questions
+
+### What is Open Auth Kit Studio?
+
+Open Auth Kit Studio is an open-source, rebrandable React and TypeScript authorization UI starter. It provides a polished sign-in and sign-up interface, safe local demo mode, a provider-agnostic redirect boundary, SVG branding configuration, and database adapter guidance.
+
+### Is this a real OAuth or identity provider?
+
+No. Demo mode is a local UI demonstration and does not verify real credentials, create accounts, or persist sessions. Redirect mode hands authentication to your own server-side OAuth/OIDC service, which must implement callback validation, PKCE, secure sessions, logout, and provider-specific controls.
+
+### Can I use my own logo and brand name?
+
+Yes. Set `VITE_BRAND_NAME`, `VITE_BRAND_LOGO`, `VITE_BRAND_TAGLINE`, and `VITE_BRAND_ACCENT` in `.env`, then place a trusted static SVG in `client/public/`. The SVG must not contain scripts, event handlers, remote resources, or JavaScript URLs.
+
+### Which databases can I integrate?
+
+The repository includes a provider-agnostic `UserStore` contract and guidance for Supabase, Firebase Firestore, PostgreSQL, SQLite, Cloudflare D1, and Cloudflare KV. Database credentials must remain server-side, and an adapter must be implemented before selecting a non-memory provider.
+
+### Where can I try the demo?
+
+Use the public demo at [demoauth.invokeil.cfd](https://demoauth.invokeil.cfd/), or run it locally with `pnpm install`, `cp .env.example .env`, and `pnpm dev`.
 
 ## Suggested next improvements
 

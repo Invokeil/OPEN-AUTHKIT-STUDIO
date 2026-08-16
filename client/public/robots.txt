@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://demoauth.invokeil.cfd/sitemap.xml
