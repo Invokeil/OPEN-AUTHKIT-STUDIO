@@ -1,66 +1,66 @@
-# Open Auth Kit — Full Audit ও Security Report
+# Open Auth Kit — Full Audit & Security Report
 
-**Audit scope:** `openai-oauth-clone-fixed-release.zip`, `openai-oauth-clone-fixed-source.zip` এবং `openai-oauth-clone-fixed-build.zip` থেকে পাওয়া source tree, client UI, Vite configuration, Express server, dependency graph, static assets, environment metadata এবং release hygiene।
+**Audit scope:** The source tree, client UI, Vite configuration, Express server, dependency graph, static assets, environment metadata, and release hygiene extracted from `openai-oauth-clone-fixed-release.zip`, `openai-oauth-clone-fixed-source.zip`, and `openai-oauth-clone-fixed-build.zip`.
 
 **Audit date:** 2026-08-15
 
 ## Executive summary
 
-মূল project-টি একটি client-side visual authorization demo ছিল। এটি real identity provider নয়; password verification, OAuth callback, token exchange, CSRF/state validation, session cookie বা database persistence কোনোটি implemented ছিল না। Open-source release-এর জন্য project-টিকে rebrandable **Open Auth Kit** করা হয়েছে, demo বনাম redirect mode স্পষ্ট করা হয়েছে, internal platform middleware ও credential-bearing metadata সরানো হয়েছে, server hardening যোগ করা হয়েছে, dependency footprint কমানো হয়েছে এবং database adapter contract/docs যুক্ত হয়েছে।
+The original project was a client-side visual authorization demo. It was not a real identity provider: password verification, OAuth callbacks, token exchange, CSRF/state validation, session cookies, and database persistence were not implemented. For the open-source release, the project was converted into the rebrandable **Open Auth Kit**, demo and redirect modes were made explicit, internal platform middleware and credential-bearing metadata were removed, server hardening was added, the dependency footprint was reduced, and a database adapter contract and implementation guides were added.
 
-> **গুরুত্বপূর্ণ সীমা:** এই report code/configuration audit। এটি penetration test, formal threat model, identity-provider certification বা production security guarantee নয়। Real authentication চালু করার আগে server-side OAuth/OIDC implementation এবং provider-specific security review প্রয়োজন।
+> **Important limitation:** This report is a code and configuration audit. It is not a penetration test, formal threat model, identity-provider certification, or production security guarantee. Before enabling real authentication, implement a server-side OAuth/OIDC flow and complete a provider-specific security review.
 
-## মূল archive analysis
+## Original archive analysis
 
-| Archive             | ভূমিকা                                          | সিদ্ধান্ত                                                               |
-| ------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
-| `fixed-source.zip`  | Source tree, build manifest, client/server code | Canonical editable source হিসেবে নেওয়া হয়েছে                            |
-| `fixed-build.zip`   | Pre-built static assets ও bundled server        | Output artifact হিসেবে পুনর্নির্মাণ করা হয়েছে                           |
-| `fixed-release.zip` | Source/build-এর combined release form           | Historical release; credential-bearing metadata public release থেকে বাদ |
+| Archive | Role | Decision |
+| --- | --- | --- |
+| `fixed-source.zip` | Source tree, build manifest, and client/server code | Selected as the canonical editable source |
+| `fixed-build.zip` | Pre-built static assets and bundled server | Rebuilt as an output artifact |
+| `fixed-release.zip` | Combined source/build release form | Treated as a historical release; credential-bearing metadata was removed from the public release |
 
-Original source TypeScript check ও production build পাস করলেও HTML build-এ unresolved analytics placeholders ছিল। মূল runtime-এ UI local success দেখাত এবং যেকোনো non-empty password গ্রহণ করত। এই behavior-কে production auth হিসেবে রাখা নিরাপদ ছিল না।
+The original source passed the TypeScript check and production build, but the HTML build contained unresolved analytics placeholders. The original runtime displayed a local success state and accepted any non-empty password. Keeping that behavior as production authentication would not have been safe.
 
 ## Original security findings
 
-| ID      | Severity | সমস্যা                                                                                                                                   | Remediation status                                                                                                                                |
-| ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SEC-001 | Critical | `.project-config.json`-এ credential-like values, internal endpoints, owner identifiers, analytics IDs এবং artifact Git remote token ছিল। | **Fixed:** file release tree থেকে বাদ; any previously exposed key revoke/rotate করতে হবে।                                                         |
-| SEC-002 | High     | যে কোনো non-empty password-এ success state দেখাত এবং behavior real sign-in-এর মতো দেখাতে পারত।                                           | **Fixed:** explicit `demo` mode; UI local-only এবং no-storage message দেখায়। Real mode-এ redirect flow ব্যবহার করা হয়েছে।                         |
-| SEC-003 | High     | Vite config-এ platform-specific browser debug collector ও storage proxy ছিল।                                                             | **Fixed:** internal plugins, log collector এবং secret-backed proxy সরানো হয়েছে।                                                                   |
-| SEC-004 | High     | Client-controlled storage path signed URL proxy-তে পাঠানো হতো।                                                                           | **Fixed:** proxy সরানো হয়েছে। ভবিষ্যতে যোগ করলে allowlist/auth/rate-limit/response validation আবশ্যক।                                             |
-| SEC-005 | Medium   | Express server-এ security headers, body limit, API boundary এবং safe cache policy ছিল না।                                                | **Fixed:** Helmet CSP, bounded JSON/urlencoded parser, API JSON 404, static cache policy, `x-powered-by` removal এবং safe SPA fallback যোগ হয়েছে। |
-| SEC-006 | Medium   | External Google Fonts ও analytics default HTML-এ ছিল; build warning তৈরি হতো।                                                            | **Fixed:** default build self-contained; telemetry ও external font removed।                                                                       |
-| SEC-007 | Medium   | Brand name ও logo path অনেক জায়গায় hard-coded ছিল।                                                                                       | **Fixed:** `VITE_BRAND_NAME`, `VITE_BRAND_LOGO`, `VITE_BRAND_TAGLINE`, `VITE_BRAND_ACCENT` config যোগ হয়েছে।                                      |
-| SEC-008 | Medium   | Unused UI-kit/chart/markdown dependency graph বড় ছিল এবং transitive advisories ছিল।                                                      | **Fixed:** active graph-এর বাইরে scaffold files/dependencies সরানো হয়েছে; lockfile regenerated।                                                   |
-| SEC-009 | Low      | সব GET route-এ `index.html` fallback হতো, ফলে unknown API path HTML পেত।                                                                 | **Fixed:** `/api/*` JSON 404; HTML fallback কেবল HTML navigation-এর জন্য।                                                                         |
-| SEC-010 | Low      | Template metadata “pure static site” বললেও custom Express server ছিল।                                                                    | **Fixed:** stale template metadata বাদ; README-তে static/demo/server distinction স্পষ্ট।                                                          |
+| ID | Severity | Finding | Remediation status |
+| --- | --- | --- | --- |
+| SEC-001 | Critical | `.project-config.json` contained credential-like values, internal endpoints, owner identifiers, analytics IDs, and an artifact Git remote token. | **Fixed:** The file was removed from the release tree. Revoke or rotate any previously exposed key. |
+| SEC-002 | High | Any non-empty password produced a success state and could make the behavior look like real sign-in. | **Fixed:** An explicit `demo` mode was added; the UI is local-only and displays a no-storage message. Real mode uses a redirect flow. |
+| SEC-003 | High | The Vite configuration included a platform-specific browser debug collector and storage proxy. | **Fixed:** Internal plugins, the log collector, and the secret-backed proxy were removed. |
+| SEC-004 | High | A client-controlled storage path was forwarded to a signed-URL proxy. | **Fixed:** The proxy was removed. If it is added in the future, an allowlist, authentication, rate limiting, and response validation are required. |
+| SEC-005 | Medium | The Express server lacked security headers, body limits, an API boundary, and a safe cache policy. | **Fixed:** Helmet CSP, bounded JSON/urlencoded parsers, JSON API 404 responses, static cache policy, `x-powered-by` removal, and safe SPA fallback were added. |
+| SEC-006 | Medium | External Google Fonts and analytics were present in the default HTML and generated build warnings. | **Fixed:** The default build is self-contained; telemetry and external fonts were removed. |
+| SEC-007 | Medium | The brand name and logo path were hard-coded in multiple places. | **Fixed:** `VITE_BRAND_NAME`, `VITE_BRAND_LOGO`, `VITE_BRAND_TAGLINE`, and `VITE_BRAND_ACCENT` configuration was added. |
+| SEC-008 | Medium | The unused UI-kit/chart/markdown dependency graph was large and included transitive advisories. | **Fixed:** Scaffold files and dependencies outside the active graph were removed, and the lockfile was regenerated. |
+| SEC-009 | Low | Every GET route fell back to `index.html`, so an unknown API path returned HTML. | **Fixed:** `/api/*` returns JSON 404 responses; HTML fallback is limited to HTML navigation. |
+| SEC-010 | Low | Template metadata described a “pure static site” even though a custom Express server existed. | **Fixed:** Stale template metadata was removed, and the README now distinguishes static, demo, and server deployments. |
 
 ## Dependency audit
 
-Original production dependency graph-এ **475 dependencies** ছিল এবং audit-এ low, moderate ও high advisory report হয়েছিল; প্রভাবিত transitive packages-এর মধ্যে `nanoid`, `mermaid`, `dompurify`, `body-parser`, `qs` এবং `path-to-regexp` ছিল। Unused package ও UI scaffold সরানোর পর `express`-কে modern major line-এ upgrade করে audit পুনরায় চালানো হয়েছে। Remediated production graph-এ **82 dependencies** এবং audit result হলো:
+The original production dependency graph contained **475 dependencies**, and the audit reported low, moderate, and high advisories. Affected transitive packages included `nanoid`, `mermaid`, `dompurify`, `body-parser`, `qs`, and `path-to-regexp`. After unused packages and the UI scaffold were removed, `express` was upgraded to a modern major line and the audit was rerun. The remediated production graph contains **82 dependencies**, with the following result:
 
 | Severity | Original baseline | Remediated |
-| -------- | ----------------: | ---------: |
-| Critical |                 0 |          0 |
-| High     |                16 |          0 |
-| Moderate |                47 |          0 |
-| Low      |                 8 |          0 |
+| --- | ---: | ---: |
+| Critical | 0 | 0 |
+| High | 16 | 0 |
+| Moderate | 47 | 0 |
+| Low | 8 | 0 |
 
-`pnpm audit --prod`-এর remediated result-এ কোনো advisory নেই। Dependency status সময়ের সঙ্গে বদলাতে পারে, তাই release pipeline-এ `pnpm audit:deps` রাখা হয়েছে।
+The remediated `pnpm audit --prod` result contained no advisories. Dependency status changes over time, so the release pipeline includes `pnpm audit:deps`.
 
-## Branding ও SVG security
+## Branding and SVG security
 
-Logo configuration এখন `VITE_BRAND_LOGO=/your-logo.svg` দিয়ে করা যায়। SVG public asset হিসেবে serve হয়, তাই trusted static SVG ব্যবহার করতে হবে। README-তে `viewBox`, static path, no-script, no-event-handler, no-foreignObject, no-external-image এবং high-contrast requirement লিখে দেওয়া হয়েছে। বর্তমান demo SVG retained আছে এবং light theme-এ দৃশ্যমান করার জন্য neutral dark fill ব্যবহার করছে।
+Logo configuration can now be set with `VITE_BRAND_LOGO=/your-logo.svg`. Because SVG files are served as public assets, use trusted static SVG files. The README documents the required `viewBox`, static paths, no-script, no-event-handler, no-`foreignObject`, no-external-image, and high-contrast requirements. The current demo SVG is retained and uses a neutral dark fill so it remains visible in the light theme.
 
 ## Database architecture
 
-Core UI database-independent। `server/storage/types.ts`-এ `UserStore` contract এবং `server/storage/memory.ts`-এ development adapter আছে। `DATABASE_PROVIDER=memory` default। `supabase`, `firebase`, `postgres`, `sqlite`, `cloudflare-d1` ও `cloudflare-kv` provider নাম parse হয়, কিন্তু corresponding adapter না থাকলে factory fail-closed error করে। এটি গুরুত্বপূর্ণ—কারণ fake “connected” state দেখানোর বদলে adopter-কে real server-side implementation বসাতে বাধ্য করে। বিস্তারিত migration ও snippets `docs/DATABASES.md`-এ আছে।
+The core UI is database-independent. `server/storage/types.ts` defines the `UserStore` contract, and `server/storage/memory.ts` provides the development adapter. `DATABASE_PROVIDER=memory` is the default. The provider names `supabase`, `firebase`, `postgres`, `sqlite`, `cloudflare-d1`, and `cloudflare-kv` are parsed, but the factory fails closed when the corresponding adapter is not implemented. This is intentional: instead of showing a fake “connected” state, the adopter is required to add a real server-side implementation. Detailed migrations and snippets are available in `docs/DATABASES.md`.
 
-Supabase exposed table-এ RLS এবং privileged server-side separation রাখতে হবে [1]। Firebase Admin SDK privileged environment-এর জন্য server-side রাখা উচিত [2]। PostgreSQL-এ parameterized query ব্যবহার করতে হবে [3]। OAuth redirect implementation-এ PKCE authorization-code flow-এর verifier/state handling provider-side backend-এ করতে হবে [4]। Cloudflare D1/KV binding Worker runtime-এ আলাদা adapter চায় [5] [6]।
+Supabase exposed tables must use RLS and privileged server-side separation [1]. Firebase Admin SDK credentials should remain in a privileged server environment [2]. PostgreSQL queries must be parameterized [3]. OAuth redirect implementations must perform PKCE authorization-code verifier and state handling in a provider-side backend [4]. Cloudflare D1/KV bindings require separate adapters in the Worker runtime [5] [6].
 
 ## Verification evidence
 
-নিচের command-গুলো remediated source tree-তে সফল হয়েছে:
+The following commands succeeded on the remediated source tree:
 
 ```text
 pnpm install --frozen-lockfile --ignore-scripts
@@ -71,11 +71,11 @@ pnpm build
 pnpm audit --prod
 ```
 
-Unit test-এ provider parsing এবং memory store email normalization/timestamp behavior যাচাই হয়েছে। Production smoke test-এ `/api/health` JSON response, `Content-Security-Policy`, `Referrer-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, SPA fallback এবং `/api/*` JSON 404 যাচাই হয়েছে। Health response-এ কোনো credential বা internal endpoint প্রকাশ হয় না।
+Unit tests verified provider parsing and memory-store email normalization and timestamp behavior. Production smoke tests verified the `/api/health` JSON response, `Content-Security-Policy`, `Referrer-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, SPA fallback, and JSON 404 responses for `/api/*`. The health response does not expose credentials or internal endpoints.
 
 ## Remaining production work
 
-Real authentication চালু করার জন্য adopter-কে provider dashboard-এ exact HTTPS redirect URI register, server-side `state` ও PKCE verifier storage, authorization code exchange, token issuer/audience validation, secure HttpOnly SameSite cookie, logout/revocation, rate limiting, CSRF review এবং monitoring যোগ করতে হবে। Database adapter-এ migration, unique normalized email, least-privilege role, timeout, retry, backup/restore এবং integration test আবশ্যক।
+To enable real authentication, adopters must register the exact HTTPS redirect URI in the provider dashboard, add server-side `state` and PKCE verifier storage, exchange authorization codes, validate the token issuer and audience, use secure HttpOnly SameSite cookies, implement logout and revocation, add rate limiting, review CSRF protections, and configure monitoring. Database adapters require migrations, a unique normalized-email constraint, least-privilege roles, timeouts, retries, backup/restore procedures, and integration tests.
 
 ## References
 

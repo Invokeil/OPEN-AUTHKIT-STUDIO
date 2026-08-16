@@ -2,30 +2,30 @@
 
 ## Scope
 
-Open Auth Kit একটি authorization UI এবং integration starter। এটি নিজে identity provider নয়। Demo mode-এ কোনো password বা OAuth token verify করা হয় না, কোনো user database-এ লেখা হয় না, এবং কোনো session cookie তৈরি হয় না। Production security-এর জন্য adopter-কে real OAuth/OIDC provider, callback endpoint, session handling, database policy এবং deployment secret manager যোগ করতে হবে।
+Open Auth Kit is an authorization UI and integration starter. It is not an identity provider. In demo mode, it does not verify passwords or OAuth tokens, write to a user database, or create session cookies. For production security, adopters must add a real OAuth/OIDC provider, callback endpoint, session handling, database policy, and deployment secret manager.
 
 ## Remediated audit items
 
-| Area                         | Remediation                                                                                                                                           |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Repository secrets           | Internal metadata, artifact URLs, owner identifiers এবং credential-like values public package থেকে বাদ দেওয়া হয়েছে। `audit:secrets` scan যুক্ত হয়েছে। |
-| Browser credential exposure  | `VITE_*`-এর public nature README-তে স্পষ্ট করা হয়েছে; demo-only fake values ছাড়া real secret config রাখা হয়নি।                                        |
-| Debug and storage collection | Platform-specific debug collector ও secret-backed storage proxy সরানো হয়েছে।                                                                          |
-| Static server                | Helmet security headers, CSP, bounded body parsing, `x-powered-by` removal, API 404 boundary এবং safe SPA fallback যোগ করা হয়েছে।                     |
-| Dependency surface           | Active UI graph ছাড়া scaffold dependency ও unused component সরানো হয়েছে।                                                                              |
-| Auth semantics               | UI-তে demo বনাম redirect mode স্পষ্ট করা হয়েছে; redirect mode-এ browser password পাঠায় না।                                                            |
+| Area | Remediation |
+| --- | --- |
+| Repository secrets | Internal metadata, artifact URLs, owner identifiers, and credential-like values were removed from the public package. An `audit:secrets` scan was added. |
+| Browser credential exposure | The public nature of `VITE_*` variables is clearly documented in the README; no real secret configuration is included beyond fake demo-only values. |
+| Debug and storage collection | The platform-specific debug collector and secret-backed storage proxy were removed. |
+| Static server | Helmet security headers, CSP, bounded body parsing, `x-powered-by` removal, an API 404 boundary, and safe SPA fallback were added. |
+| Dependency surface | Scaffold dependencies and unused components outside the active UI graph were removed. |
+| Auth semantics | Demo and redirect modes are explicit in the UI; redirect mode does not send a browser password. |
 
 ## Production checklist
 
-Production-এ যাওয়ার আগে exact HTTPS redirect URI allowlist করুন এবং OAuth authorization-code flow-এ state, PKCE verifier, nonce যেখানে প্রযোজ্য, code exchange, issuer validation, audience validation ও token expiry যাচাই করুন। Session নিজস্ব signed, Secure, HttpOnly, SameSite cookie-তে রাখুন এবং refresh token browser local storage-এ রাখবেন না। Password আপনার application database-এ plaintext বা ad-hoc hash হিসেবে রাখবেন না; established identity provider ব্যবহার করুন।
+Before going to production, allowlist the exact HTTPS redirect URI and validate `state`, the PKCE verifier, the nonce where applicable, code exchange, issuer, audience, and token expiry in the OAuth authorization-code flow. Store sessions in your own signed, Secure, HttpOnly, SameSite cookie, and never store refresh tokens in browser local storage. Do not store passwords in plaintext or in an ad-hoc hash in your application database; use an established identity provider.
 
-Database adapter-এ normalized email-এর unique constraint, parameterized query, least-privilege role, timeout, retry policy, migration এবং audit logging যোগ করুন। Supabase exposed table-এ RLS চালু রাখুন; service-role credential কেবল server-side রাখুন। Cloudflare D1/KV binding ব্যবহার করলে Worker runtime-এর binding এবং permission model অনুযায়ী adapter লিখুন।
+Database adapters must include a normalized-email unique constraint, parameterized queries, a least-privilege role, timeouts, a retry policy, migrations, and audit logging. Keep RLS enabled on exposed Supabase tables and keep the service-role credential server-side only. When using Cloudflare D1/KV bindings, implement the adapter according to the Worker runtime's binding and permission model.
 
-Deployment-এ TLS, rate limiting, request-size limit, structured log redaction, dependency audit, secret rotation, backup/restore drill এবং monitoring যোগ করুন। `DATABASE_PROVIDER` non-memory করার আগে corresponding adapter code review ও integration test আবশ্যক।
+Deployment should include TLS, rate limiting, request-size limits, structured log redaction, dependency audits, secret rotation, backup/restore drills, and monitoring. Before setting `DATABASE_PROVIDER` to a non-memory value, review the corresponding adapter code and run integration tests.
 
 ## Reporting a vulnerability
 
-বাস্তব vulnerability পেলে public issue-এ credential বা exploit detail দেবেন না। Maintainer-এর private security contact থাকলে সেটি ব্যবহার করুন; না থাকলে repository owner-কে private channel-এ minimal reproduction, affected version, impact এবং suggested mitigation পাঠান। Secret leak হলে প্রথম পদক্ষেপ হলো সংশ্লিষ্ট provider dashboard থেকে token revoke/rotate করা, তারপর Git history ও deployment logs পরীক্ষা করা।
+When you find a real vulnerability, do not disclose credentials or exploit details in a public issue. Use the maintainer's private security contact when one is available; otherwise, send the repository owner a private message containing a minimal reproduction, affected version, impact, and suggested mitigation. If a secret has leaked, first revoke or rotate the token in the relevant provider dashboard, then inspect Git history and deployment logs.
 
 ## Test commands
 

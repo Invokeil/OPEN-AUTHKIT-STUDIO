@@ -1,10 +1,10 @@
 # Database Adapter Implementation Guide
 
-এই guide-টি `server/storage/types.ts`-এর `UserStore` contract ধরে লেখা। Application-এর demo mode কোনো database চায় না। বাস্তব persistence চাইলে শুধুমাত্র server runtime-এ একটি adapter লিখুন এবং `server/storage/index.ts`-এ provider factory-তে register করুন।
+This guide is based on the `UserStore` contract in `server/storage/types.ts`. The application demo mode does not require a database. For real persistence, write an adapter only in the server runtime and register it in the provider factory in `server/storage/index.ts`.
 
 ## Shared schema
 
-সব provider-এ email lower-case করে unique রাখুন। কোনো password column রাখবেন না; password verification identity provider-এর দায়িত্বে থাকবে।
+For every provider, normalize email addresses to lowercase and enforce uniqueness. Do not add a password column; password verification belongs to the identity provider.
 
 ```sql
 create table auth_users (
@@ -18,11 +18,11 @@ create table auth_users (
 create unique index auth_users_email_lower_idx on auth_users (lower(email));
 ```
 
-SQLite-তে `timestamptz`-এর বদলে `text` ব্যবহার করুন এবং timestamp UTC ISO string হিসেবে লিখুন। D1-এ `text` primary key ও `text not null` ব্যবহার করুন।
+For SQLite, use `text` instead of `timestamptz` and store timestamps as UTC ISO strings. For D1, use a `text` primary key and `text not null` columns.
 
 ## Supabase
 
-Supabase dashboard-এ migration চালিয়ে table ও RLS policy তৈরি করুন। Browser থেকে direct profile access দরকার হলে user JWT অনুযায়ী narrow policy লিখুন। Server-side service-role client policy bypass করতে পারে, তাই সেটি secret manager-এ রাখুন এবং browser bundle-এ পাঠাবেন না [1]।
+Run the migration in the Supabase dashboard to create the table and RLS policy. If direct profile access from the browser is required, write a narrow policy based on the user JWT. A server-side service-role client can bypass policy, so keep it in a secret manager and never send it to the browser bundle [1].
 
 ```bash
 pnpm add @supabase/supabase-js
@@ -75,7 +75,7 @@ export function createSupabaseStore(): UserStore {
 
 ## Firebase Firestore
 
-Firebase Admin SDK server-only environment-এ initialize করুন। Firestore document ID হিসেবে verified provider UID ব্যবহার করুন; unverified email দিয়ে privileged write করবেন না [2]।
+Initialize the Firebase Admin SDK only in a server environment. Use the verified provider UID as the Firestore document ID; do not perform privileged writes using an unverified email [2].
 
 ```bash
 pnpm add firebase-admin
@@ -118,11 +118,11 @@ export function createFirebaseStore(): UserStore {
 }
 ```
 
-Firebase service account JSON কখনো Git বা `VITE_*` variable-এ রাখবেন না। Prefer deployment secret manager বা workload identity।
+Never store the Firebase service-account JSON in Git or in a `VITE_*` variable. Prefer a deployment secret manager or workload identity.
 
 ## PostgreSQL
 
-`pg` pool ব্যবহার করুন এবং সব user input parameterized query-তে পাঠান [3]। Migration tool দিয়ে schema version করুন।
+Use a `pg` pool and send all user input through parameterized queries [3]. Version the schema with a migration tool.
 
 ```bash
 pnpm add pg
@@ -177,21 +177,21 @@ export function createPostgresStore(): UserStore {
 }
 ```
 
-Production database role-এ শুধু প্রয়োজনীয় table privilege দিন। Connection timeout, pool limit, TLS এবং graceful shutdown যোগ করুন।
+Grant the production database role only the required table privileges. Add connection timeouts, pool limits, TLS, and graceful shutdown.
 
 ## SQLite
 
-SQLite self-hosted single-node deployment-এর জন্য সহজ। Serverless multi-instance deployment-এ local file consistency ধরে নেওয়া যাবে না।
+SQLite is convenient for a self-hosted single-node deployment. Do not assume local-file consistency in a serverless multi-instance deployment.
 
 ```bash
 pnpm add better-sqlite3
 ```
 
-`better-sqlite3` adapter-এ startup migration চালান, prepared statement ব্যবহার করুন, email unique index রাখুন এবং database file-কে static directory-এর বাইরে রাখুন। Container ব্যবহার করলে volume mount এবং backup policy যোগ করুন।
+In a `better-sqlite3` adapter, run the startup migration, use prepared statements, keep a unique email index, and store the database file outside the static directory. When using a container, add a volume mount and a backup policy.
 
 ## Cloudflare D1
 
-D1 হলো Workers runtime-এর binding-based SQL database। Express server-এর `process.env` দিয়ে D1 binding পাওয়া যাবে না; Worker handler-এ `env.DB` binding গ্রহণ করে adapter তৈরি করতে হবে। D1 prepared statement ও batch API ব্যবহার করুন [4]।
+D1 is a binding-based SQL database for the Workers runtime. An Express server cannot access a D1 binding through `process.env`; the Worker handler must receive the `env.DB` binding and create the adapter from it. Use D1 prepared statements and the batch API [4].
 
 ```ts
 export function createD1Store(db: D1Database): UserStore {
@@ -240,7 +240,7 @@ export function createD1Store(db: D1Database): UserStore {
 
 ## Cloudflare KV
 
-KV key-value store session/cache বা low-contention profile lookup-এ ব্যবহার করুন; authoritative relational user table হিসেবে নয়। KV binding Worker runtime-এ `env.AUTH_KV` দিয়ে পাওয়া যায় এবং read-after-write consistency assumptions সীমিত রাখতে হবে [5]। Identity uniqueness ও transactional update দরকার হলে D1 ব্যবহার করুন।
+Use KV for session/cache data or low-contention profile lookups, not as the authoritative relational user table. The KV binding is available as `env.AUTH_KV` in the Worker runtime, and read-after-write consistency assumptions must remain limited [5]. Use D1 when identity uniqueness and transactional updates are required.
 
 ```ts
 export function createKvProfileStore(kv: KVNamespace): UserStore {
@@ -264,7 +264,7 @@ export function createKvProfileStore(kv: KVNamespace): UserStore {
 
 ## Provider factory registration
 
-শেষে `server/storage/index.ts`-এ environment অনুযায়ী adapter register করুন। External provider configure করা থাকলেও corresponding adapter code না থাকা অবস্থায় application start করাবেন না। এই repository-র default factory ইচ্ছাকৃতভাবে error করে, যাতে “connected” মিথ্যা status না দেখায়।
+Finally, register the adapter in `server/storage/index.ts` according to the environment. Do not start the application when an external provider is configured but the corresponding adapter code is missing. The repository's default factory intentionally fails, rather than displaying a false “connected” status.
 
 ```ts
 const config = getStorageConfig();

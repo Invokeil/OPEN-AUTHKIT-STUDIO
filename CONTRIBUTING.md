@@ -1,6 +1,6 @@
 # Contributing
 
-Open Auth Kit-এ contribution করার আগে repository clone করে `.env.example` থেকে `.env` তৈরি করুন। কোনো real credential, customer data, internal endpoint বা proprietary logo commit করবেন না।
+Before contributing to Open Auth Kit, clone the repository and create `.env` from `.env.example`. Never commit real credentials, customer data, internal endpoints, or proprietary logos.
 
 ```bash
 pnpm install
@@ -10,8 +10,8 @@ pnpm audit:secrets
 pnpm build
 ```
 
-UI পরিবর্তনে keyboard navigation, reduced motion, mobile layout এবং screen-reader label পরীক্ষা করুন। Brand asset পরিবর্তন করলে SVG-এর নিরাপত্তা নিয়ম `README.md`-এর SVG section অনুসরণ করুন।
+For UI changes, test keyboard navigation, reduced-motion behavior, mobile layouts, and screen-reader labels. When changing brand assets, follow the SVG security requirements in the SVG section of `README.md`.
 
-নতুন database adapter যোগ করলে `UserStore` contract মেনে server-only implementation, migration, unique email rule, parameterized query, timeout এবং integration test দিন। Provider credential `.env.example`-এ কেবল variable name হিসেবে রাখুন; কোনো real value দেবেন না। `DATABASE_PROVIDER` configure করা থাকলেও adapter না থাকলে fail-closed behavior বজায় রাখুন।
+When adding a database adapter, follow the `UserStore` contract and provide a server-only implementation, migration, unique-email rule, parameterized queries, timeouts, and integration tests. Keep provider credentials in `.env.example` only as variable names; never add real values. Even when `DATABASE_PROVIDER` is configured, preserve fail-closed behavior when the adapter is not implemented.
 
-Pull request-এ পরিবর্তনের security impact, test commands, dependency changes এবং migration notes লিখুন। Vulnerability public issue-এ প্রকাশ না করে `SECURITY.md` অনুসরণ করুন।
+In pull requests, describe the security impact, test commands, dependency changes, and migration notes. Do not disclose vulnerabilities in public issues; follow `SECURITY.md` instead.
